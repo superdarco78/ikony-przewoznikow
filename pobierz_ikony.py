@@ -79,6 +79,7 @@ def pobierz(url, domena):
         lambda: curl("https://www.google.com/s2/favicons?domain={}&sz=64".format(domena)),
         lambda: curl("https://icons.duckduckgo.com/ip3/{}.ico".format(domena)),
         lambda: curl("https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://{}&size=64".format(domena)),
+        lambda: curl("https://logo.clearbit.com/{}".format(domena)),
     ]:
         try:
             return metoda()
