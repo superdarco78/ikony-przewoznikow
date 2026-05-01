@@ -1,10 +1,10 @@
-# wersja 2.3
+# wersja 2.5
 import os
 import subprocess
 import concurrent.futures
 import datetime
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 
 IKONY = Path("ikony")
@@ -13,47 +13,47 @@ IKONY.mkdir(parents=True, exist_ok=True)
 przewoznicy = [
     ("ztm_warszawa",        "ZTM Warszawa",          "https://www.wtp.waw.pl/wp-content/themes/wtp-theme/images/favicon.ico",                                                    "wtp.waw.pl"),
     ("polregio",            "PolRegio",              "https://polregio.pl/images/favicons/apple-icon-57x57.png",                                                                  "polregio.pl"),
-    ("pkp_intercity",       "PKP Intercity",         "https://fetchfavicon.com/api/favicon?url=https://www.intercity.pl&sz=64",                                                                              "intercity.pl"),
+    ("pkp_intercity",       "PKP Intercity",         "https://fetchfavicon.com/api/favicon?url=https://intercity.pl&sz=64",                                                      "intercity.pl"),
     ("koleje_mazowieckie",  "Koleje Mazowieckie",    "https://mazowieckie.com.pl/sites/default/files/favicon.png",                                                                "mazowieckie.com.pl"),
     ("wkd",                 "WKD",                   "https://wkd.com.pl/templates/wkd/fav/apple-icon-57x57.png",                                                                "wkd.com.pl"),
-    ("pkp_skm_trojmiasto",  "PKP SKM Trojmiasto",   "https://www.skm.pkp.pl/_assets/b733c679720d3533bec8682561dedb7a/img/favicons/apple-icon-57x57.png",                         "skm.pkp.pl"),
+    ("pkp_skm_trojmiasto",  "PKP SKM Trojmiasto",    "https://www.skm.pkp.pl/_assets/b733c679720d3533bec8682561dedb7a/img/favicons/apple-icon-57x57.png",                        "skm.pkp.pl"),
     ("koleje_slaskie",      "Koleje Slaskie",        "https://www.kolejeslaskie.pl/app/uploads/2026/02/favicon-white-color-48x48.png",                                           "kolejeslaskie.pl"),
-    ("koleje_dolnoslaskie", "Koleje Dolnoslaskie",   "https://kolejedolnoslaskie.pl/favicon.ico",                                                                                "kolejedolnoslaskie.pl"),
-    ("koleje_wielkopolskie","Koleje Wielkopolskie",  "https://koleje-wielkopolskie.com.pl/wp-content/themes/koleje_wielkopolskie/img/general/favicon.jpg",                       "koleje-wielkopolskie.com.pl"),
-    ("skm_warszawa",        "SKM Warszawa",          "https://www.skm.warszawa.pl/wp-content/themes/skm//public/images/favicon/apple-touch-icon.png",                           "skm.warszawa.pl"),
-    ("lka",                 "LKA",                   "https://lka.lodzkie.pl/favicon.ico",                                                                                       "lka.lodzkie.pl"),
-    ("koleje_malopolskie",  "Koleje Malopolskie",    "https://kolejemalopolskie.com.pl/uploaded_images/1648251769_favn.ico",                                                     "kolejemalopolskie.com.pl"),
-    ("arriva",              "Arriva RP",             "https://arriva.pl/public/img/favicon.ico",                                                                                 "arriva.pl"),
-    ("regiojet",            "RegioJet",              "https://regiojet.pl/favicon.ico",                                                                                           "regiojet.pl"),
-    ("leo_express",         "Leo Express",           "https://www.leoexpress.com/static/apple-touch-icon.png?v=2",                                                               "leoexpress.com"),
-    ("ztm_gzm",             "ZTM GZM",               "https://www.metropoliaztm.pl/static/ztmweb/icons/favicon.ico",                                                            "metropoliaztm.pl"),
-    ("zdmikp_bydgoszcz",    "ZDMiKP Bydgoszcz",     "https://zdmikp.bydgoszcz.pl/media/system/images/favicon.ico",                                                             "zdmikp.bydgoszcz.pl"),
-    ("mzdik_radom",         "MZDiK Radom",           "https://www.mzdik.pl/images/static/icon.png",                                                                             "mzdik.pl"),
-    ("ztm_rzeszow",         "ZTM Rzeszow",           "https://ztm.erzeszow.pl/media/uploads/2024/03/cropped-favicon_ZTM-02-32x32.png",                                         "ztm.rzeszow.pl"),
-    ("ztm_lublin",          "ZTM Lublin",            "https://www.ztm.lublin.eu/favicon.ico",                                                                                   "ztm.lublin.eu"),
-    ("ztm_kielce",          "ZTM Kielce",            "https://ztm.kielce.pl/templates/rptheme/favicon.ico",                                                                     "ztm.kielce.pl"),
-    ("mzk_torun",           "MZK Torun",             "https://www.torun.pl/sites/default/files/favicons/apple-touch-icon.png",                                                  "torun.pl"),
-    ("mzk_wejherowo",       "MZK Wejherowo",         "https://mzkwejherowo.pl/assets/spina/favicon-6f0f5d6f.png",                                                               "mzkwejherowo.pl"),
-    ("mpk_lomza",           "MPK Lomza",             "https://www.mpklomza.pl/favicon.ico",                                                                                     "mpklomza.pl"),
-    ("ka_swinoujscie",      "KA Swinoujscie",        "https://www.ka.swinoujscie.pl/templates/komunikacja/favicon.ico",                                                        "ka.swinoujscie.pl"),
-    ("gzk_bystry",          "GZK Bystry",            "https://gzkbystry.pl/images/favicon.ico",                                                                                "gzkbystry.pl"),
-    ("mzk_elk",             "MZK Elk",               "https://mzk.elk.pl/wp-content/uploads/2021/06/cropped-logo-mzk-32x32.jpg",                                               "mzk.elk.pl"),
-    ("zkm_elblag",          "ZKM Elblag",            "https://www.zkm.elblag.com.pl/wp-content/uploads/2020/10/cropped-logo-300x300-1-e1602680131854-32x32.png",               "zkm.elblag.com.pl"),
-    ("mzk_gorzow",          "MZK Gorzow Wlkp",      "https://mzk-gorzow.com.pl/favicon/32x32.png?ts=1628685347",                                                              "mzk-gorzow.com.pl"),
-    ("ztp_krakow",          "ZTP Krakow",            "https://ztp.krakow.pl/wp-content/themes/wpsite/favicons/apple-touch-icon.png",                                           "ztp.krakow.pl"),
-    ("um_wroclaw",          "UM Wroclaw",            "https://www.wroclaw.pl/themes/favicon/apple-touch-icon.png",                                                              "wroclaw.pl"),
-    ("ztm_poznan",          "ZTM Poznan",            "https://www.ztm.poznan.pl/pwa/icons/192.png",                                                                             "ztm.poznan.pl"),
-    ("ztm_gdansk",          "ZTM Gdansk",            "https://ztm.gda.pl/images/favicon.ico",                                                                                   "ztm.gda.pl"),
-    ("zditm_szczecin",      "ZDiTM Szczecin",        "https://www.zditm.szczecin.pl/build/assets/apple-touch-icon-B3IrERv1.png",                                               "zditm.szczecin.pl"),
-    ("bkm_bialystok",       "BKM Bialystok",         "http://komunikacja.bialystok.pl/projects/bkm/img/favicon.png",                                                           "komunikacja.bialystok.pl"),
-    ("zkm_gdynia",          "ZKM Gdynia",            "https://zkmgdynia.pl/data/domains/1/favicon/favicon.ico",                                                                "zkmgdynia.pl"),
-    ("mpk_czestochowa",     "MPK Czestochowa",       "https://mpk.czest.pl/img/favicon.ico",                                                                                   "mpk.czest.pl"),
-    ("zdzit_olsztyn",       "ZDZiT Olsztyn",         "https://fetchfavicon.com/api/favicon?url=https://zdzit.olsztyn.eu&sz=64",                                      "zdzit.olsztyn.eu"),
+    ("koleje_dolnoslaskie", "Koleje Dolnoslaskie",   "https://kolejedolnoslaskie.pl/favicon.ico",                                                                                 "kolejedolnoslaskie.pl"),
+    ("koleje_wielkopolskie","Koleje Wielkopolskie",  "https://koleje-wielkopolskie.com.pl/wp-content/themes/koleje_wielkopolskie/img/general/favicon.jpg",                        "koleje-wielkopolskie.com.pl"),
+    ("skm_warszawa",        "SKM Warszawa",          "https://www.skm.warszawa.pl/wp-content/themes/skm//public/images/favicon/apple-touch-icon.png",                            "skm.warszawa.pl"),
+    ("lka",                 "LKA",                   "https://lka.lodzkie.pl/favicon.ico",                                                                                        "lka.lodzkie.pl"),
+    ("koleje_malopolskie",  "Koleje Malopolskie",    "https://kolejemalopolskie.com.pl/uploaded_images/1648251769_favn.ico",                                                      "kolejemalopolskie.com.pl"),
+    ("arriva",              "Arriva RP",             "https://arriva.pl/public/img/favicon.ico",                                                                                  "arriva.pl"),
+    ("regiojet",            "RegioJet",              "https://regiojet.pl/favicon.ico",                                                                                            "regiojet.pl"),
+    ("leo_express",         "Leo Express",           "https://www.leoexpress.com/static/apple-touch-icon.png?v=2",                                                                "leoexpress.com"),
+    ("ztm_gzm",             "ZTM GZM",               "https://www.metropoliaztm.pl/static/ztmweb/icons/favicon.ico",                                                             "metropoliaztm.pl"),
+    ("zdmikp_bydgoszcz",    "ZDMiKP Bydgoszcz",     "https://zdmikp.bydgoszcz.pl/media/system/images/favicon.ico",                                                              "zdmikp.bydgoszcz.pl"),
+    ("mzdik_radom",         "MZDiK Radom",           "https://www.mzdik.pl/images/static/icon.png",                                                                              "mzdik.pl"),
+    ("ztm_rzeszow",         "ZTM Rzeszow",           "https://ztm.erzeszow.pl/media/uploads/2024/03/cropped-favicon_ZTM-02-32x32.png",                                          "ztm.rzeszow.pl"),
+    ("ztm_lublin",          "ZTM Lublin",            "https://www.ztm.lublin.eu/favicon.ico",                                                                                    "ztm.lublin.eu"),
+    ("ztm_kielce",          "ZTM Kielce",            "https://ztm.kielce.pl/templates/rptheme/favicon.ico",                                                                      "ztm.kielce.pl"),
+    ("mzk_torun",           "MZK Torun",             "https://www.torun.pl/sites/default/files/favicons/apple-touch-icon.png",                                                   "torun.pl"),
+    ("mzk_wejherowo",       "MZK Wejherowo",         "https://mzkwejherowo.pl/assets/spina/favicon-6f0f5d6f.png",                                                                "mzkwejherowo.pl"),
+    ("mpk_lomza",           "MPK Lomza",             "https://www.mpklomza.pl/favicon.ico",                                                                                      "mpklomza.pl"),
+    ("ka_swinoujscie",      "KA Swinoujscie",        "https://www.ka.swinoujscie.pl/templates/komunikacja/favicon.ico",                                                         "ka.swinoujscie.pl"),
+    ("gzk_bystry",          "GZK Bystry",            "https://gzkbystry.pl/images/favicon.ico",                                                                                  "gzkbystry.pl"),
+    ("mzk_elk",             "MZK Elk",               "https://mzk.elk.pl/wp-content/uploads/2021/06/cropped-logo-mzk-32x32.jpg",                                                "mzk.elk.pl"),
+    ("zkm_elblag",          "ZKM Elblag",            "https://www.zkm.elblag.com.pl/wp-content/uploads/2020/10/cropped-logo-300x300-1-e1602680131854-32x32.png",                "zkm.elblag.com.pl"),
+    ("mzk_gorzow",          "MZK Gorzow Wlkp",      "https://mzk-gorzow.com.pl/favicon/32x32.png?ts=1628685347",                                                               "mzk-gorzow.com.pl"),
+    ("ztp_krakow",          "ZTP Krakow",            "https://ztp.krakow.pl/wp-content/themes/wpsite/favicons/apple-touch-icon.png",                                             "ztp.krakow.pl"),
+    ("um_wroclaw",          "UM Wroclaw",            "https://www.wroclaw.pl/themes/favicon/apple-touch-icon.png",                                                               "wroclaw.pl"),
+    ("ztm_poznan",          "ZTM Poznan",            "https://www.ztm.poznan.pl/pwa/icons/192.png",                                                                              "ztm.poznan.pl"),
+    ("ztm_gdansk",          "ZTM Gdansk",            "https://ztm.gda.pl/images/favicon.ico",                                                                                    "ztm.gda.pl"),
+    ("zditm_szczecin",      "ZDiTM Szczecin",        "https://www.zditm.szczecin.pl/build/assets/apple-touch-icon-B3IrERv1.png",                                                "zditm.szczecin.pl"),
+    ("bkm_bialystok",       "BKM Bialystok",         "http://komunikacja.bialystok.pl/projects/bkm/img/favicon.png",                                                            "komunikacja.bialystok.pl"),
+    ("zkm_gdynia",          "ZKM Gdynia",            "https://zkmgdynia.pl/data/domains/1/favicon/favicon.ico",                                                                  "zkmgdynia.pl"),
+    ("mpk_czestochowa",     "MPK Czestochowa",       "https://mpk.czest.pl/img/favicon.ico",                                                                                    "mpk.czest.pl"),
+    ("zdzit_olsztyn",       "ZDZiT Olsztyn",         "https://fetchfavicon.com/api/favicon?url=https://zdzit.olsztyn.eu&sz=64",                                                  "zdzit.olsztyn.eu"),
 ]
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36"
 
-MAGIC = [b'\x89PNG', b'\xff\xd8\xff', b'GIF8', b'\x00\x00\x01\x00', b'\x00\x00\x02\x00', b'BM']
+MAGIC = [b'\x89PNG', b'\xff\xd8\xff', b'GIF8', b'\x00\x00\x01\x00', b'\x00\x00\x02\x00', b'BM', b'RIFF', b'WEBP']
 
 def jest_obrazkiem(dane):
     for m in MAGIC:
@@ -88,48 +88,51 @@ def pobierz(url, domena):
     raise Exception("wszystkie metody zawiodly dla: " + domena)
 
 def usun_tlo(img):
+    """Usuwa tlo przez flood-fill od wszystkich krawedzi obrazka"""
     img = img.convert("RGBA")
     img = img.resize((64, 64), Image.LANCZOS)
     px = img.load()
     w, h = img.size
     TOL = 30
-    bg = px[0, 0][:3]
 
-    def bliski_bg(c):
-        return all(abs(int(c[i]) - int(bg[i])) <= TOL for i in range(3)) and c[3] > 10
-
-    def jasny(c):
-        # Usun rowniez bardzo jasne piksele (biale tlo wewnatrz logo)
-        return all(int(c[i]) >= 240 for i in range(3)) and c[3] > 10
-
-    # Flood-fill od 4 rogow - usuwa tlo polaczone z rogiem
-    odwiedzony = [[False] * h for _ in range(w)]
-    kolejka = []
-
-    def dodaj(x, y):
-        if 0 <= x < w and 0 <= y < h and not odwiedzony[x][y]:
-            c = px[x, y]
-            if bliski_bg(c) or jasny(c):
+    def flood(br, bg, bb):
+        def bliski(c):
+            return (abs(int(c[0])-br) <= TOL and
+                    abs(int(c[1])-bg) <= TOL and
+                    abs(int(c[2])-bb) <= TOL and
+                    c[3] > 10)
+        odwiedzony = [[False]*h for _ in range(w)]
+        kolejka = []
+        def dodaj(x, y):
+            if 0 <= x < w and 0 <= y < h and not odwiedzony[x][y] and bliski(px[x, y]):
                 odwiedzony[x][y] = True
                 kolejka.append((x, y))
+        # Start od wszystkich pikseli na krawedzi
+        for x in range(w):
+            dodaj(x, 0)
+            dodaj(x, h-1)
+        for y in range(h):
+            dodaj(0, y)
+            dodaj(w-1, y)
+        while kolejka:
+            x, y = kolejka.pop()
+            r2, g2, b2, a2 = px[x, y]
+            px[x, y] = (r2, g2, b2, 0)
+            dodaj(x-1, y); dodaj(x+1, y); dodaj(x, y-1); dodaj(x, y+1)
 
-    for rog in [(0, 0), (w-1, 0), (0, h-1), (w-1, h-1)]:
-        dodaj(*rog)
-
-    while kolejka:
-        x, y = kolejka.pop()
-        r2, g2, b2, a2 = px[x, y]
-        px[x, y] = (r2, g2, b2, 0)
-        dodaj(x-1, y); dodaj(x+1, y); dodaj(x, y-1); dodaj(x, y+1)
+    # Uruchom flood od koloru z kazdego rogu
+    kolory = set()
+    for rx, ry in [(0,0),(w-1,0),(0,h-1),(w-1,h-1)]:
+        c = px[rx, ry]
+        if c[3] > 10:
+            kolory.add(c[:3])
+    for kolor in kolory:
+        flood(*kolor)
 
     return img
 
-WYMUS = ["pkp_intercity", "zdzit_olsztyn"] + [c[0] for c in przewoznicy]  # przerob wszystkie + [c[0] for c in przewoznicy]  # wszystkie od nowa  # lista id do wymuszonego pobrania
-
 def generuj_placeholder(nazwa):
-    """Generuje ikone z inicjalami gdy nie mozna pobrac"""
-    from PIL import ImageDraw, ImageFont
-    inicjaly = "".join(w[0] for w in nazwa.split()[:2]).upper()
+    inicjaly = "".join(s[0] for s in nazwa.split()[:2]).upper()
     img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     draw.rounded_rectangle([0, 0, 63, 63], radius=10, fill=(70, 130, 180, 255))
@@ -146,9 +149,6 @@ def generuj_placeholder(nazwa):
 def przetworz(wpis):
     cid, nazwa, url, domena = wpis
     plik = IKONY / (cid + ".webp")
-    if plik.exists() and plik.stat().st_size > 100 and cid not in WYMUS:
-        print("pominiety: " + nazwa)
-        return cid, "pominiety", None
     try:
         dane = pobierz(url, domena)
         img = Image.open(BytesIO(dane))
@@ -161,7 +161,6 @@ def przetworz(wpis):
         try:
             img = generuj_placeholder(nazwa)
             img.save(str(plik), "WEBP", lossless=True, quality=90)
-            print("placeholder zapisany: " + nazwa)
             return cid, "placeholder", str(e)
         except Exception as e2:
             print("blad: " + nazwa + " — " + str(e2))
@@ -170,17 +169,15 @@ def przetworz(wpis):
 with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
     wyniki = list(executor.map(przetworz, przewoznicy))
 
-ok        = [w for w in wyniki if w[1] == "ok"]
-pominiete = [w for w in wyniki if w[1] == "pominiety"]
-bledy     = [w for w in wyniki if w[1] == "blad"]
+ok          = [w for w in wyniki if w[1] == "ok"]
+placeholdry = [w for w in wyniki if w[1] == "placeholder"]
+bledy       = [w for w in wyniki if w[1] == "blad"]
 
-print("\nNowe: {}  Pominiete: {}  Bledy: {}".format(len(ok), len(pominiete), len(bledy)))
-if bledy:
-    print("Nieudane: " + ", ".join(b[0] for b in bledy))
+print("\nOK: {}  Placeholder: {}  Bledy: {}".format(len(ok), len(placeholdry), len(bledy)))
 
 linie = [
     "Wygenerowano: " + datetime.datetime.utcnow().isoformat(),
-    "Nowe: {}  Pominiete: {}  Bledy: {}".format(len(ok), len(pominiete), len(bledy)),
-] + ["BLAD " + b[0] + ": " + str(b[2]) for b in bledy]
+    "OK: {}  Placeholder: {}  Bledy: {}".format(len(ok), len(placeholdry), len(bledy)),
+] + ["PLACEHOLDER " + p[0] for p in placeholdry] + ["BLAD " + b[0] + ": " + str(b[2]) for b in bledy]
 
 (IKONY / "_raport.txt").write_text("\n".join(linie))
