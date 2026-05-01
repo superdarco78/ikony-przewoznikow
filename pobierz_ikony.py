@@ -1,4 +1,4 @@
-# wersja 1.3
+# wersja 1.5
 import os
 import subprocess
 import concurrent.futures
@@ -13,7 +13,7 @@ IKONY.mkdir(parents=True, exist_ok=True)
 przewoznicy = [
     ("ztm_warszawa",        "ZTM Warszawa",          "https://www.wtp.waw.pl/wp-content/themes/wtp-theme/images/favicon.ico",                                                    "wtp.waw.pl"),
     ("polregio",            "PolRegio",              "https://polregio.pl/images/favicons/apple-icon-57x57.png",                                                                  "polregio.pl"),
-    ("pkp_intercity",       "PKP Intercity",         "https://ebilet.intercity.pl/favicon.ico",                                                                              "intercity.pl"),
+    ("pkp_intercity",       "PKP Intercity",         "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.intercity.pl&size=128",                                                                              "intercity.pl"),
     ("koleje_mazowieckie",  "Koleje Mazowieckie",    "https://mazowieckie.com.pl/sites/default/files/favicon.png",                                                                "mazowieckie.com.pl"),
     ("wkd",                 "WKD",                   "https://wkd.com.pl/templates/wkd/fav/apple-icon-57x57.png",                                                                "wkd.com.pl"),
     ("pkp_skm_trojmiasto",  "PKP SKM Trojmiasto",   "https://www.skm.pkp.pl/_assets/b733c679720d3533bec8682561dedb7a/img/favicons/apple-icon-57x57.png",                         "skm.pkp.pl"),
@@ -119,6 +119,23 @@ def usun_tlo(img):
 
 WYMUS = ["pkp_intercity"]  # lista id do wymuszonego pobrania
 
+def generuj_placeholder(nazwa):
+    """Generuje ikone z inicjalami gdy nie mozna pobrac"""
+    from PIL import ImageDraw, ImageFont
+    inicjaly = "".join(w[0] for w in nazwa.split()[:2]).upper()
+    img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    draw.rounded_rectangle([0, 0, 63, 63], radius=10, fill=(70, 130, 180, 255))
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24)
+    except Exception:
+        font = ImageFont.load_default()
+    bbox = draw.textbbox((0, 0), inicjaly, font=font)
+    x = (64 - (bbox[2] - bbox[0])) // 2
+    y = (64 - (bbox[3] - bbox[1])) // 2
+    draw.text((x, y), inicjaly, fill=(255, 255, 255, 255), font=font)
+    return img
+
 def przetworz(wpis):
     cid, nazwa, url, domena = wpis
     plik = IKONY / (cid + ".webp")
@@ -133,8 +150,15 @@ def przetworz(wpis):
         print("ok: " + nazwa)
         return cid, "ok", None
     except Exception as e:
-        print("blad: " + nazwa + " — " + str(e))
-        return cid, "blad", str(e)
+        print("placeholder: " + nazwa + " — " + str(e))
+        try:
+            img = generuj_placeholder(nazwa)
+            img.save(str(plik), "WEBP", lossless=True, quality=90)
+            print("placeholder zapisany: " + nazwa)
+            return cid, "placeholder", str(e)
+        except Exception as e2:
+            print("blad: " + nazwa + " — " + str(e2))
+            return cid, "blad", str(e2)
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
     wyniki = list(executor.map(przetworz, przewoznicy))
