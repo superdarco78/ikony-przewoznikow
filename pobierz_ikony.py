@@ -52,16 +52,25 @@ przewoznicy = [
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36"
 
+MAGIC = [b'\x89PNG', b'\xff\xd8\xff', b'GIF8', b'\x00\x00\x01\x00', b'\x00\x00\x02\x00', b'BM']
+
+def jest_obrazkiem(dane):
+    for m in MAGIC:
+        if dane[:len(m)] == m:
+            return True
+    return False
+
 def curl(url, tor=False):
     cmd = ["curl", "-sL", "--max-time", "12", "--insecure", "--compressed",
-           "-A", UA, "-H", "Accept: image/*,*/*;q=0.8"]
+           "-A", UA, "-H", "Accept: image/*,*/*;q=0.8",
+           "-H", "Referer: https://" + url.split("/")[2] + "/"]
     if tor:
         cmd += ["--socks5-hostname", "127.0.0.1:9050", "--max-time", "15"]
     cmd.append(url)
     r = subprocess.run(cmd, capture_output=True, timeout=18)
-    if r.returncode == 0 and len(r.stdout) > 200:
+    if r.returncode == 0 and len(r.stdout) > 100 and jest_obrazkiem(r.stdout):
         return r.stdout
-    raise Exception("rc={} len={}".format(r.returncode, len(r.stdout)))
+    raise Exception("rc={} len={} magic={}".format(r.returncode, len(r.stdout), r.stdout[:8]))
 
 def pobierz(url, domena):
     for metoda in [
@@ -69,6 +78,7 @@ def pobierz(url, domena):
         lambda: curl(url, tor=True),
         lambda: curl("https://www.google.com/s2/favicons?domain={}&sz=64".format(domena)),
         lambda: curl("https://icons.duckduckgo.com/ip3/{}.ico".format(domena)),
+        lambda: curl("https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://{}&size=64".format(domena)),
     ]:
         try:
             return metoda()
