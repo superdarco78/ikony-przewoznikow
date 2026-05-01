@@ -1,3 +1,2 @@
-Wygenerowano: 2026-05-01T15:22:29.021248
-Nowe: 0  Pominiete: 37  Bledy: 1
-BLAD pkp_intercity: cannot identify image file <_io.BytesIO object at 0x7ff4f5ebe1b0>
+Wygenerowano: 2026-05-01T15:26:25.320339
+Nowe: 1  Pominiete: 37  Bledy: 0
