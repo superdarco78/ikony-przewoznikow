@@ -1,0 +1,4 @@
+Wygenerowano: 2026-05-01T14:58:29.110212
+Nowe: 36  Pominiete: 0  Bledy: 2
+BLAD pkp_intercity: cannot identify image file <_io.BytesIO object at 0x7fc98c37d800>
+BLAD koleje_dolnoslaskie: cannot identify image file <_io.BytesIO object at 0x7fc98c392f70>
