@@ -1,4 +1,4 @@
-# wersja 2.6
+# wersja 2.7
 import os
 import subprocess
 import concurrent.futures
@@ -89,7 +89,7 @@ def pobierz(url, domena):
 
 def usun_tlo(img):
     img = img.convert("RGBA")
-    img = img.resize((64, 64), Image.LANCZOS)
+    img = img.resize((24, 24), Image.LANCZOS)
     px = img.load()
     w, h = img.size
     TOL = 45
@@ -132,16 +132,16 @@ def usun_tlo(img):
 
 def generuj_placeholder(nazwa):
     inicjaly = "".join(s[0] for s in nazwa.split()[:2]).upper()
-    img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    img = Image.new("RGBA", (24, 24), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
-    draw.rounded_rectangle([0, 0, 63, 63], radius=10, fill=(70, 130, 180, 255))
+    draw.rounded_rectangle([0, 0, 23, 23], radius=4, fill=(70, 130, 180, 255))
     try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24)
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 10)
     except Exception:
         font = ImageFont.load_default()
     bbox = draw.textbbox((0, 0), inicjaly, font=font)
-    x = (64 - (bbox[2] - bbox[0])) // 2
-    y = (64 - (bbox[3] - bbox[1])) // 2
+    x = (24 - (bbox[2] - bbox[0])) // 2
+    y = (24 - (bbox[3] - bbox[1])) // 2
     draw.text((x, y), inicjaly, fill=(255, 255, 255, 255), font=font)
     return img
 
