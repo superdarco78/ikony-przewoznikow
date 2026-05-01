@@ -1,4 +1,4 @@
-# wersja 2.5
+# wersja 2.6
 import os
 import subprocess
 import concurrent.futures
@@ -13,7 +13,7 @@ IKONY.mkdir(parents=True, exist_ok=True)
 przewoznicy = [
     ("ztm_warszawa",        "ZTM Warszawa",          "https://www.wtp.waw.pl/wp-content/themes/wtp-theme/images/favicon.ico",                                                    "wtp.waw.pl"),
     ("polregio",            "PolRegio",              "https://polregio.pl/images/favicons/apple-icon-57x57.png",                                                                  "polregio.pl"),
-    ("pkp_intercity",       "PKP Intercity",         "https://fetchfavicon.com/api/favicon?url=https://intercity.pl&sz=64",                                                      "intercity.pl"),
+    ("pkp_intercity",       "PKP Intercity",         "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.intercity.pl&size=128", "intercity.pl"),
     ("koleje_mazowieckie",  "Koleje Mazowieckie",    "https://mazowieckie.com.pl/sites/default/files/favicon.png",                                                                "mazowieckie.com.pl"),
     ("wkd",                 "WKD",                   "https://wkd.com.pl/templates/wkd/fav/apple-icon-57x57.png",                                                                "wkd.com.pl"),
     ("pkp_skm_trojmiasto",  "PKP SKM Trojmiasto",    "https://www.skm.pkp.pl/_assets/b733c679720d3533bec8682561dedb7a/img/favicons/apple-icon-57x57.png",                        "skm.pkp.pl"),
@@ -48,12 +48,12 @@ przewoznicy = [
     ("bkm_bialystok",       "BKM Bialystok",         "http://komunikacja.bialystok.pl/projects/bkm/img/favicon.png",                                                            "komunikacja.bialystok.pl"),
     ("zkm_gdynia",          "ZKM Gdynia",            "https://zkmgdynia.pl/data/domains/1/favicon/favicon.ico",                                                                  "zkmgdynia.pl"),
     ("mpk_czestochowa",     "MPK Czestochowa",       "https://mpk.czest.pl/img/favicon.ico",                                                                                    "mpk.czest.pl"),
-    ("zdzit_olsztyn",       "ZDZiT Olsztyn",         "https://fetchfavicon.com/api/favicon?url=https://zdzit.olsztyn.eu&sz=64",                                                  "zdzit.olsztyn.eu"),
+    ("zdzit_olsztyn",       "ZDZiT Olsztyn",         "https://zdzit.olsztyn.eu/wp-content/uploads/2023/07/cropped-logozdzit-150x150.png",                                       "zdzit.olsztyn.eu"),
 ]
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36"
 
-MAGIC = [b'\x89PNG', b'\xff\xd8\xff', b'GIF8', b'\x00\x00\x01\x00', b'\x00\x00\x02\x00', b'BM', b'RIFF', b'WEBP']
+MAGIC = [b'\x89PNG', b'\xff\xd8\xff', b'GIF8', b'\x00\x00\x01\x00', b'\x00\x00\x02\x00', b'BM']
 
 def jest_obrazkiem(dane):
     for m in MAGIC:
@@ -88,12 +88,11 @@ def pobierz(url, domena):
     raise Exception("wszystkie metody zawiodly dla: " + domena)
 
 def usun_tlo(img):
-    """Usuwa tlo przez flood-fill od wszystkich krawedzi obrazka"""
     img = img.convert("RGBA")
     img = img.resize((64, 64), Image.LANCZOS)
     px = img.load()
     w, h = img.size
-    TOL = 30
+    TOL = 45
 
     def flood(br, bg, bb):
         def bliski(c):
