@@ -12,7 +12,7 @@ IKONY.mkdir(parents=True, exist_ok=True)
 przewoznicy = [
     ("ztm_warszawa",        "ZTM Warszawa",          "https://www.wtp.waw.pl/wp-content/themes/wtp-theme/images/favicon.ico",                                                    "wtp.waw.pl"),
     ("polregio",            "PolRegio",              "https://polregio.pl/images/favicons/apple-icon-57x57.png",                                                                  "polregio.pl"),
-    ("pkp_intercity",       "PKP Intercity",         "https://www.intercity.pl/favicon-96x96.png",                                                                              "intercity.pl"),
+    ("pkp_intercity",       "PKP Intercity",         "https://ebilet.intercity.pl/favicon.ico",                                                                              "intercity.pl"),
     ("koleje_mazowieckie",  "Koleje Mazowieckie",    "https://mazowieckie.com.pl/sites/default/files/favicon.png",                                                                "mazowieckie.com.pl"),
     ("wkd",                 "WKD",                   "https://wkd.com.pl/templates/wkd/fav/apple-icon-57x57.png",                                                                "wkd.com.pl"),
     ("pkp_skm_trojmiasto",  "PKP SKM Trojmiasto",   "https://www.skm.pkp.pl/_assets/b733c679720d3533bec8682561dedb7a/img/favicons/apple-icon-57x57.png",                         "skm.pkp.pl"),
