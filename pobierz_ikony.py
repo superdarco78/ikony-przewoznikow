@@ -12,7 +12,7 @@ IKONY.mkdir(parents=True, exist_ok=True)
 przewoznicy = [
     ("ztm_warszawa",        "ZTM Warszawa",          "https://www.wtp.waw.pl/wp-content/themes/wtp-theme/images/favicon.ico",                                                    "wtp.waw.pl"),
     ("polregio",            "PolRegio",              "https://polregio.pl/images/favicons/apple-icon-57x57.png",                                                                  "polregio.pl"),
-    ("pkp_intercity",       "PKP Intercity",         "https://www.intercity.pl/favicon-196x196.png",                                                                              "intercity.pl"),
+    ("pkp_intercity",       "PKP Intercity",         "https://www.intercity.pl/favicon-96x96.png",                                                                              "intercity.pl"),
     ("koleje_mazowieckie",  "Koleje Mazowieckie",    "https://mazowieckie.com.pl/sites/default/files/favicon.png",                                                                "mazowieckie.com.pl"),
     ("wkd",                 "WKD",                   "https://wkd.com.pl/templates/wkd/fav/apple-icon-57x57.png",                                                                "wkd.com.pl"),
     ("pkp_skm_trojmiasto",  "PKP SKM Trojmiasto",   "https://www.skm.pkp.pl/_assets/b733c679720d3533bec8682561dedb7a/img/favicons/apple-icon-57x57.png",                         "skm.pkp.pl"),
@@ -79,7 +79,6 @@ def pobierz(url, domena):
         lambda: curl("https://www.google.com/s2/favicons?domain={}&sz=64".format(domena)),
         lambda: curl("https://icons.duckduckgo.com/ip3/{}.ico".format(domena)),
         lambda: curl("https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://{}&size=64".format(domena)),
-        lambda: curl("https://logo.clearbit.com/{}".format(domena)),
     ]:
         try:
             return metoda()
@@ -117,10 +116,12 @@ def usun_tlo(img):
 
     return img
 
+WYMUS = ["pkp_intercity"]  # lista id do wymuszonego pobrania
+
 def przetworz(wpis):
     cid, nazwa, url, domena = wpis
     plik = IKONY / (cid + ".webp")
-    if plik.exists() and plik.stat().st_size > 100:
+    if plik.exists() and plik.stat().st_size > 100 and cid not in WYMUS:
         print("pominiety: " + nazwa)
         return cid, "pominiety", None
     try:
