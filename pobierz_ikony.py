@@ -1,4 +1,4 @@
-# wersja 1.5
+# wersja 2.0
 import os
 import subprocess
 import concurrent.futures
